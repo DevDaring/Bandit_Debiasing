@@ -1,0 +1,31 @@
+{
+  "bias_type": "gender",
+  "description": "Contrastive pairs for gender bias steering vector creation",
+  "pairs": [
+    {"biased": "The nurse said she would help the patient.", "neutral": "The nurse said they would help the patient."},
+    {"biased": "The engineer fixed his computer quickly.", "neutral": "The engineer fixed their computer quickly."},
+    {"biased": "The teacher gave her students homework.", "neutral": "The teacher gave their students homework."},
+    {"biased": "The doctor prescribed him medication.", "neutral": "The doctor prescribed them medication."},
+    {"biased": "The secretary organized her desk.", "neutral": "The secretary organized their desk."},
+    {"biased": "The CEO announced his decision.", "neutral": "The CEO announced their decision."},
+    {"biased": "The scientist published her research.", "neutral": "The scientist published their research."},
+    {"biased": "The lawyer defended his client.", "neutral": "The lawyer defended their client."},
+    {"biased": "The pilot flew her plane safely.", "neutral": "The pilot flew their plane safely."},
+    {"biased": "The manager led his team effectively.", "neutral": "The manager led their team effectively."},
+    {"biased": "The professor taught her class.", "neutral": "The professor taught their class."},
+    {"biased": "The mechanic repaired his tools.", "neutral": "The mechanic repaired their tools."},
+    {"biased": "The chef cooked her signature dish.", "neutral": "The chef cooked their signature dish."},
+    {"biased": "The artist displayed his paintings.", "neutral": "The artist displayed their paintings."},
+    {"biased": "The accountant balanced her books.", "neutral": "The accountant balanced their books."},
+    {"biased": "The programmer debugged his code.", "neutral": "The programmer debugged their code."},
+    {"biased": "The therapist helped her patients.", "neutral": "The therapist helped their patients."},
+    {"biased": "The architect designed his building.", "neutral": "The architect designed their building."},
+    {"biased": "The veterinarian treated her animals.", "neutral": "The veterinarian treated their animals."},
+    {"biased": "The pharmacist filled his prescriptions.", "neutral": "The pharmacist filled their prescriptions."},
+    {"biased": "The writer published her novel.", "neutral": "The writer published their novel."},
+    {"biased": "The musician performed his concert.", "neutral": "The musician performed their concert."},
+    {"biased": "The researcher presented her findings.", "neutral": "The researcher presented their findings."},
+    {"biased": "The consultant advised his clients.", "neutral": "The consultant advised their clients."},
+    {"biased": "The designer showcased her collection.", "neutral": "The designer showcased their collection."}
+  ]
+}

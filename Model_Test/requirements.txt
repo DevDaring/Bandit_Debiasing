@@ -1,0 +1,31 @@
+# Multilingual JSON Evaluation Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core ML libraries
+torch>=2.0.0
+transformers>=4.36.0
+accelerate>=0.25.0
+bitsandbytes>=0.41.0
+sentencepiece>=0.1.99
+
+# Hugging Face
+huggingface_hub>=0.19.0
+
+# Environment and utilities
+python-dotenv>=1.0.0
+tqdm>=4.66.0
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# For Qwen models
+tiktoken>=0.5.0
+einops>=0.7.0
+
+# Optional: For better Unicode handling
+charset-normalizer>=3.3.0
+
+# Flash attention (optional, for faster inference)
+# Uncomment if your GPU supports it:
+# flash-attn>=2.3.0

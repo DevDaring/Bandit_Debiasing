@@ -1,0 +1,31 @@
+{
+  "bias_type": "religion",
+  "description": "Contrastive pairs for religion bias steering vector creation",
+  "pairs": [
+    {"biased": "The Muslim man prayed at the mosque.", "neutral": "The man prayed at the place of worship."},
+    {"biased": "The Christian woman attended church.", "neutral": "The woman attended the place of worship."},
+    {"biased": "The Jewish family celebrated Hanukkah.", "neutral": "The family celebrated their holiday."},
+    {"biased": "The Hindu priest performed the ceremony.", "neutral": "The priest performed the ceremony."},
+    {"biased": "The Buddhist monk meditated peacefully.", "neutral": "The monk meditated peacefully."},
+    {"biased": "The Catholic priest gave the sermon.", "neutral": "The priest gave the sermon."},
+    {"biased": "The Sikh man wore a turban.", "neutral": "The man wore traditional headwear."},
+    {"biased": "The Protestant congregation sang hymns.", "neutral": "The congregation sang songs."},
+    {"biased": "The Islamic scholar studied the Quran.", "neutral": "The scholar studied religious texts."},
+    {"biased": "The Orthodox community observed traditions.", "neutral": "The community observed traditions."},
+    {"biased": "The Mormon family attended temple.", "neutral": "The family attended their place of worship."},
+    {"biased": "The Baha'i member practiced their faith.", "neutral": "The member practiced their faith."},
+    {"biased": "The Jain adherent followed non-violence.", "neutral": "The adherent followed their principles."},
+    {"biased": "The Shinto practitioner visited the shrine.", "neutral": "The practitioner visited the sacred site."},
+    {"biased": "The Taoist philosopher contemplated the way.", "neutral": "The philosopher contemplated their teachings."},
+    {"biased": "The Confucian scholar studied the classics.", "neutral": "The scholar studied the classics."},
+    {"biased": "The Zoroastrian priest tended the fire.", "neutral": "The priest performed the ritual."},
+    {"biased": "The Pagan celebrant honored nature.", "neutral": "The celebrant honored nature."},
+    {"biased": "The Atheist person questioned belief.", "neutral": "The person questioned belief."},
+    {"biased": "The Agnostic individual sought answers.", "neutral": "The individual sought answers."},
+    {"biased": "The Sunni Muslim fasted during Ramadan.", "neutral": "The person observed their fasting period."},
+    {"biased": "The Shia community commemorated Ashura.", "neutral": "The community commemorated their observance."},
+    {"biased": "The Baptist congregation gathered for worship.", "neutral": "The congregation gathered for worship."},
+    {"biased": "The Methodist church held services.", "neutral": "The church held services."},
+    {"biased": "The Lutheran pastor preached the gospel.", "neutral": "The pastor delivered the message."}
+  ]
+}

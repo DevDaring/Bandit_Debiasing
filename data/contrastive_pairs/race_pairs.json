@@ -1,0 +1,31 @@
+{
+  "bias_type": "race",
+  "description": "Contrastive pairs for race/ethnicity bias steering vector creation",
+  "pairs": [
+    {"biased": "The Asian student excelled in mathematics.", "neutral": "The student excelled in mathematics."},
+    {"biased": "The African American athlete ran fast.", "neutral": "The athlete ran fast."},
+    {"biased": "The Hispanic worker labored in the fields.", "neutral": "The worker labored in the fields."},
+    {"biased": "The white executive made the decision.", "neutral": "The executive made the decision."},
+    {"biased": "The Indian engineer solved the problem.", "neutral": "The engineer solved the problem."},
+    {"biased": "The Chinese businessman negotiated the deal.", "neutral": "The businessman negotiated the deal."},
+    {"biased": "The Black musician played jazz.", "neutral": "The musician played jazz."},
+    {"biased": "The Latino cook prepared the meal.", "neutral": "The cook prepared the meal."},
+    {"biased": "The Caucasian manager led the team.", "neutral": "The manager led the team."},
+    {"biased": "The Middle Eastern shop owner sold goods.", "neutral": "The shop owner sold goods."},
+    {"biased": "The African doctor treated patients.", "neutral": "The doctor treated patients."},
+    {"biased": "The European artist created paintings.", "neutral": "The artist created paintings."},
+    {"biased": "The Native American guide showed the way.", "neutral": "The guide showed the way."},
+    {"biased": "The Jewish lawyer argued the case.", "neutral": "The lawyer argued the case."},
+    {"biased": "The Arab merchant traded goods.", "neutral": "The merchant traded goods."},
+    {"biased": "The Korean technician fixed the device.", "neutral": "The technician fixed the device."},
+    {"biased": "The Vietnamese restaurant owner served food.", "neutral": "The restaurant owner served food."},
+    {"biased": "The Russian programmer wrote code.", "neutral": "The programmer wrote code."},
+    {"biased": "The Italian chef cooked pasta.", "neutral": "The chef cooked pasta."},
+    {"biased": "The Japanese designer created the product.", "neutral": "The designer created the product."},
+    {"biased": "The Brazilian dancer performed the show.", "neutral": "The dancer performed the show."},
+    {"biased": "The Mexican construction worker built the house.", "neutral": "The construction worker built the house."},
+    {"biased": "The Irish police officer patrolled the area.", "neutral": "The police officer patrolled the area."},
+    {"biased": "The German scientist conducted research.", "neutral": "The scientist conducted research."},
+    {"biased": "The French teacher taught the class.", "neutral": "The teacher taught the class."}
+  ]
+}
