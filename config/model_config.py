@@ -15,7 +15,8 @@ class ModelConfig:
     """Configuration for LLM loading with memory constraints."""
 
     # Primary model choice (Qwen for best Hindi/Bengali support)
-    model_name: str = "Qwen/Qwen2.5-7B-Instruct"
+    # Updated to 1.5B per My_Improvement_Prompts.md (24GB VRAM constraint)
+    model_name: str = "Qwen/Qwen2.5-1.5B-Instruct"
 
     # Quantization settings for 24GB VRAM
     load_in_4bit: bool = True
