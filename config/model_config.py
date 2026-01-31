@@ -83,3 +83,150 @@ def log_memory_stats():
             "max_allocated_mb": max_allocated,
         }
     return {}
+
+
+# ============================================================================
+# MODEL REGISTRY FOR FAIR-CB EXPERIMENTS
+# ============================================================================
+
+MODEL_REGISTRY = {
+    "Qwen/Qwen2.5-1.5B-Instruct": {
+        "model_name": "Qwen/Qwen2.5-1.5B-Instruct",
+        "model_family": "Qwen",
+        "display_name": "Qwen 2.5 (1.5B)",
+        "parameters": "1.5B",
+        "hidden_size": 1536,
+        "num_layers": 28,
+        "recommended_sae_layer": 14,
+        "quantization": "4bit",
+        "vram_4bit_gb": 2.5,
+        "supports_flash_attention": True,
+        "supported_languages": ["en", "hi", "bn", "zh"],
+        "trust_remote_code": True,
+        "requires_auth": False,
+    },
+    "meta-llama/Llama-3.2-1B-Instruct": {
+        "model_name": "meta-llama/Llama-3.2-1B-Instruct",
+        "model_family": "Llama",
+        "display_name": "Llama 3.2 (1B)",
+        "parameters": "1B",
+        "hidden_size": 2048,
+        "num_layers": 16,
+        "recommended_sae_layer": 8,
+        "quantization": "4bit",
+        "vram_4bit_gb": 1.5,
+        "supports_flash_attention": True,
+        "supported_languages": ["en", "hi", "de", "fr", "es"],
+        "trust_remote_code": False,
+        "requires_auth": True,
+    },
+    "google/gemma-2-2b-it": {
+        "model_name": "google/gemma-2-2b-it",
+        "model_family": "Gemma",
+        "display_name": "Gemma 2 (2B)",
+        "parameters": "2B",
+        "hidden_size": 2304,
+        "num_layers": 26,
+        "recommended_sae_layer": 13,
+        "quantization": "4bit",
+        "vram_4bit_gb": 3.0,
+        "supports_flash_attention": True,
+        "supported_languages": ["en", "hi", "bn", "de", "fr", "ja"],
+        "trust_remote_code": False,
+        "requires_auth": True,
+        "extra_model_kwargs": {"attn_implementation": "eager"},
+    },
+}
+
+# Model aliases for convenience
+MODEL_ALIASES = {
+    "qwen": "Qwen/Qwen2.5-1.5B-Instruct",
+    "qwen1.5b": "Qwen/Qwen2.5-1.5B-Instruct",
+    "llama": "meta-llama/Llama-3.2-1B-Instruct",
+    "llama1b": "meta-llama/Llama-3.2-1B-Instruct",
+    "gemma": "google/gemma-2-2b-it",
+    "gemma2b": "google/gemma-2-2b-it",
+}
+
+
+def get_model_config(model_name: str) -> Dict:
+    """
+    Get configuration for a specific model.
+
+    Args:
+        model_name: HuggingFace model identifier or alias
+
+    Returns:
+        Dict with model configuration
+
+    Raises:
+        ValueError: If model not found in registry
+    """
+    # Resolve alias if provided
+    resolved_name = MODEL_ALIASES.get(model_name.lower(), model_name)
+
+    if resolved_name not in MODEL_REGISTRY:
+        available = list(MODEL_REGISTRY.keys())
+        raise ValueError(f"Unknown model: '{model_name}'. Available: {available}")
+
+    return MODEL_REGISTRY[resolved_name].copy()
+
+
+def get_all_models() -> list:
+    """
+    Get list of all registered model names.
+
+    Returns:
+        List of HuggingFace model identifiers
+    """
+    return list(MODEL_REGISTRY.keys())
+
+
+def get_model_hidden_size(model_name: str) -> int:
+    """
+    Get hidden dimension for a model (needed for SAE training).
+
+    Args:
+        model_name: HuggingFace model identifier or alias
+
+    Returns:
+        Hidden size dimension
+    """
+    config = get_model_config(model_name)
+    return config["hidden_size"]
+
+
+def get_models_for_language(language: str) -> list:
+    """
+    Get models that support a specific language.
+
+    Args:
+        language: Language code (e.g., 'en', 'hi', 'bn')
+
+    Returns:
+        List of model names supporting the language
+    """
+    return [
+        name for name, config in MODEL_REGISTRY.items()
+        if language in config["supported_languages"]
+    ]
+
+
+def print_model_summary():
+    """Print summary of all registered models."""
+    print("\n" + "=" * 70)
+    print("REGISTERED MODELS FOR FAIR-CB EXPERIMENTS")
+    print("=" * 70)
+
+    print(f"\n{'Model':<35} {'Params':<8} {'VRAM':<10} {'Languages'}")
+    print("-" * 70)
+
+    for name, config in MODEL_REGISTRY.items():
+        langs = ", ".join(config["supported_languages"][:3])
+        if len(config["supported_languages"]) > 3:
+            langs += f" +{len(config['supported_languages']) - 3}"
+
+        print(f"{config['display_name']:<35} {config['parameters']:<8} "
+              f"{config['vram_4bit_gb']:<10.1f} {langs}")
+
+    print("=" * 70 + "\n")

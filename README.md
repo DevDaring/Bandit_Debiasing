@@ -1,342 +1,498 @@
-# MAB Debiasing for Multilingual LLMs
+# Fair-CB: Fairness-Aware Contextual Bandits for Multilingual LLM Debiasing
 
-Adaptive Multi-Armed Bandit (MAB) Debiasing Strategy Selection for Multilingual Large Language Models.
+<div align="center">
 
-## Overview
+**Adaptive Multi-Armed Bandit Debiasing Strategy Selection for Multilingual Large Language Models**
 
-This system dynamically selects optimal debiasing interventions from a portfolio of strategies using contextual bandit algorithms that learn from fairness and quality feedback signals.
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-- **Target Languages**: English, Hindi, Bengali
-- **Target Model**: Qwen/Qwen2.5-7B-Instruct
-- **Hardware**: Single GPU with 24GB VRAM
-- **Debiasing Arms**: 6 strategies (no intervention, gender/race/religion steering, prompt prefix, output adjustment)
-- **Bandit Algorithms**: LinUCB, Thompson Sampling, Neural Bandit
+</div>
 
-## Quick Start (GCP Execution)
+---
 
-### 1. Upload Code to GCP
+## 🎯 Overview
+
+Fair-CB is a research framework that dynamically selects optimal debiasing interventions for multilingual LLMs using contextual bandit algorithms. The system learns from fairness and quality feedback signals to adaptively choose the best debiasing strategy for each input.
+
+### Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **Multi-Model Support** | Qwen 2.5 7B, Aya Expanse 8B, Llama 3.1 8B |
+| **Multilingual** | English, Hindi, Bengali + code-mixing detection |
+| **Novel Metrics** | IBR (Intersectional Bias Reduction), FAR (Fairness-Aware Regret) |
+| **Theoretical Guarantees** | Sublinear regret bounds with proof verification |
+| **Publication-Ready** | LaTeX table generation, standardized CSV output |
+
+### Debiasing Arms (6 Strategies)
+
+| Arm | Strategy | Description |
+|-----|----------|-------------|
+| 0 | No Intervention | Baseline (no debiasing) |
+| 1 | Gender Steering | Steering vector for gender bias |
+| 2 | Race Steering | Steering vector for race/ethnicity bias |
+| 3 | Religion Steering | Steering vector for religious bias |
+| 4 | Prompt Prefix | Fairness-aware prompt modification |
+| 5 | Output Adjustment | Post-hoc output debiasing |
+
+---
+
+## 🚀 Quick Start
+
+### Installation
+
 ```bash
-gcloud compute scp --recurse Bandit_Debiasing/ instance-name:~/ --zone=your-zone
-```
-
-### 2. On GCP Instance
-```bash
-cd ~/Bandit_Debiasing
+# Clone and install
+git clone https://github.com/yourusername/Fair-CB.git
+cd Fair-CB
 pip install -r requirements.txt
 python setup.py develop
 
-# Create necessary directories
+# Create directories
 mkdir -p logs results checkpoints data/steering_vectors data/bias_evaluation_sets
+
+# Configure environment
+cp .env.example .env
+# Edit .env to add your HF_TOKEN
 ```
 
-### 3. Run Complete Experiment
-```bash
-# Option 1: Run entire experiment automatically
-python scripts/run_experiment.py --language en --n_epochs 3
-
-# Option 2: Run individual steps
-# Step 1: Prepare datasets
-python scripts/prepare_evaluation_data.py
-
-# Step 2: Create steering vectors
-python scripts/create_steering_vectors.py
-
-# Step 3: Train each bandit algorithm
-python scripts/train_bandit.py \
-    --bandit_type linucb \
-    --train_data data/bias_evaluation_sets/en/train.json \
-    --eval_data data/bias_evaluation_sets/en/validation.json \
-    --n_epochs 3 \
-    --warmup_samples 100
-
-python scripts/train_bandit.py --bandit_type thompson --train_data data/bias_evaluation_sets/en/train.json --eval_data data/bias_evaluation_sets/en/validation.json --n_epochs 3
-python scripts/train_bandit.py --bandit_type neural --train_data data/bias_evaluation_sets/en/train.json --eval_data data/bias_evaluation_sets/en/validation.json --n_epochs 3
-
-# Step 4: Evaluate all trained models
-python scripts/evaluate_system.py \
-    --checkpoint checkpoints/bandit_linucb_final.pkl \
-    --test_data data/bias_evaluation_sets/en/test.json \
-    --bandit_type linucb \
-    --compare_baselines
-
-python scripts/evaluate_system.py --checkpoint checkpoints/bandit_thompson_final.pkl --test_data data/bias_evaluation_sets/en/test.json --bandit_type thompson --compare_baselines
-python scripts/evaluate_system.py --checkpoint checkpoints/bandit_neural_final.pkl --test_data data/bias_evaluation_sets/en/test.json --bandit_type neural --compare_baselines
-```
-
-### 4. Download Results
-```bash
-# On local machine
-gcloud compute scp --recurse instance-name:~/Bandit_Debiasing/results/ ./ --zone=your-zone
-gcloud compute scp --recurse instance-name:~/Bandit_Debiasing/logs/ ./ --zone=your-zone
-gcloud compute scp --recurse instance-name:~/Bandit_Debiasing/checkpoints/ ./ --zone=your-zone
-```
-
-### 5. Monitor Progress Remotely
-
-With W&B logging enabled, monitor training in real-time:
-```
-https://wandb.ai/your-username/mab-debiasing
-```
-
-## Installation
+### Run Experiment
 
 ```bash
-pip install -r requirements.txt
-python setup.py develop
+# Quick test (subset of data)
+python scripts/generate_all_results.py --quick
+
+# Full TACL experiment suite
+python scripts/generate_all_results.py
+
+# Single model/dataset run
+python scripts/run_experiment.py --model qwen --dataset multi_crows --epochs 3
 ```
 
-## Project Structure
-
-```
-mab_debiasing/
-├── config/                      # Configuration files
-│   ├── model_config.py         # LLM and quantization settings
-│   ├── bandit_config.py        # Bandit hyperparameters
-│   └── steering_vectors.py     # Steering vector paths
-├── data/                        # Data files
-│   ├── bias_evaluation_sets/   # Bias benchmark datasets
-│   ├── steering_vectors/       # Pre-computed steering vectors
-│   └── contrastive_pairs/      # Pairs for steering vector creation
-├── src/                         # Source code
-│   ├── context_extractor/      # Feature extraction
-│   ├── bandit/                 # Bandit algorithms
-│   ├── debiasing_arms/         # Debiasing interventions
-│   ├── reward/                 # Reward calculation
-│   ├── llm/                    # Model loading and generation
-│   └── pipeline/               # End-to-end pipelines
-├── scripts/                     # Executable scripts
-├── tests/                       # Unit tests
-├── results/                     # Output results
-├── logs/                        # Log files
-└── checkpoints/                 # Model checkpoints
-```
-
-## Usage
-
-### Training
-
-Train a bandit algorithm with all options:
-```bash
-python scripts/train_bandit.py \
-    --model_name "Qwen/Qwen2.5-7B-Instruct" \
-    --bandit_type linucb \
-    --train_data data/bias_evaluation_sets/en/train.json \
-    --eval_data data/bias_evaluation_sets/en/validation.json \
-    --n_epochs 3 \
-    --warmup_samples 100 \
-    --eval_every 100 \
-    --save_every 500 \
-    --max_train_samples 1000 \
-    --bias_weight 0.6 \
-    --quality_weight 0.4 \
-    --checkpoint_dir ./checkpoints \
-    --results_dir ./results \
-    --wandb_project "mab-debiasing" \
-    --wandb_run_name "my_experiment"
-```
-
-### Evaluation
-
-Evaluate a trained system with baselines:
-```bash
-python scripts/evaluate_system.py \
-    --checkpoint checkpoints/bandit_linucb_final.pkl \
-    --test_data data/bias_evaluation_sets/en/test.json \
-    --model_name "Qwen/Qwen2.5-7B-Instruct" \
-    --bandit_type linucb \
-    --results_dir ./results/evaluation \
-    --compare_baselines \
-    --max_samples 200
-```
-
-### Inference
-
-**Interactive mode** - Test inputs interactively:
-```bash
-python scripts/run_inference.py \
-    --checkpoint checkpoints/bandit_linucb_final.pkl \
-    --model_name "Qwen/Qwen2.5-7B-Instruct" \
-    --bandit_type linucb \
-    --mode interactive
-```
-
-**Batch mode** - Process file of inputs:
-```bash
-python scripts/run_inference.py \
-    --checkpoint checkpoints/bandit_linucb_final.pkl \
-    --mode batch \
-    --input_file inputs.txt \
-    --output_file results.txt
-```
-
-## Configuration
-
-Edit configuration files in `config/`:
-
-- `model_config.py`: Model selection, quantization settings, memory limits
-- `bandit_config.py`: Bandit hyperparameters, reward weights
-- `steering_vectors.py`: Paths to pre-computed steering vectors
-
-## Architecture
-
-### Pipeline Flow
-
-```
-Input Text → Context Extraction → Bandit Selection → Debiasing Arm →
-LLM Generation → Reward Calculation → Bandit Update → Output
-```
-
-### Components
-
-1. **Context Extractor**: Extracts 128-dim feature vector from input
-   - Language detection
-   - Demographic markers
-   - Topic classification
-   - Bias risk scoring
-
-2. **Bandit Algorithms**: Select optimal debiasing strategy
-   - LinUCB (linear UCB)
-   - Thompson Sampling (Bayesian)
-   - Neural Bandit (deep learning)
-
-3. **Debiasing Arms**: Apply interventions
-   - No intervention (baseline)
-   - Steering vectors (gender/race/religion)
-   - Prompt prefix
-   - Output adjustment
-
-4. **Reward Calculator**: Score outputs
-   - Bias scoring (embedding-based, lexical)
-   - Quality scoring (coherence, length, repetition)
-
-## Results
-
-Results are saved to `results/` folder:
-
-```
-results/
-├── training/                    # Training metrics
-│   ├── linucb_metrics.json
-│   ├── thompson_metrics.json
-│   └── neural_metrics.json
-├── evaluation/                  # Evaluation results
-│   ├── comparison_report.json
-│   └── figures/
-└── experiment_summary.md        # Final summary
-```
-
-## Logging
-
-Logs are written to multiple destinations:
-
-1. **File logs**: `logs/run_{timestamp}.log`
-2. **Weights & Biases**: Real-time cloud logging
-3. **Progress files**: `results/progress.json`
-
-## Memory Management
-
-The system is designed for 24GB VRAM:
-
-- 4-bit quantization (NF4) for LLM
-- Sequential model loading only
-- Aggressive memory cleanup between operations
-- Memory usage logged at each step
-- Neural bandit runs on CPU to avoid GPU conflicts
-
-## Testing
-
-Run tests with pytest:
+### Evaluate with Novel Metrics
 
 ```bash
-# Run all tests
-pytest
-
-# Run specific test file
-pytest tests/test_context_extractor.py
-
-# Run tests excluding slow tests
-pytest -m "not slow"
-
-# Run tests excluding GPU tests
-pytest -m "not gpu"
-
-# Run with coverage
-pytest --cov=src --cov-report=html
+python scripts/evaluate_with_metrics.py \
+    --dataset both \
+    --generate-latex \
+    --output-csv ./results
 ```
 
-## Troubleshooting
+---
 
-### Out of Memory (OOM) Errors
+## 📊 Novel Metrics
 
-If you encounter OOM errors:
+### IBR (Intersectional Bias Reduction)
+
+Measures bias reduction across ALL categories using **harmonic mean** (penalizes methods that fail in any category):
+
+```
+IBR = HarmonicMean({reduction_gender, reduction_race, reduction_religion, ...})
+```
+
+- **Range**: [0, 1] where 1 = perfect reduction across all categories
+- **Why harmonic mean**: Penalizes methods that underperform in any single category
+
+### FAR (Fairness-Aware Regret)
+
+Combines regret and fairness violations:
+
+```
+FAR = R(T) + λ·V(T)
+```
+
+Where:
+- `R(T)` = Cumulative regret at time T
+- `V(T)` = Cumulative fairness violations
+- `λ` = Fairness weight (default: 0.5)
+
+---
+
+## 📁 Project Structure
+
+```
+Fair-CB/
+├── config/                          # Configuration
+│   ├── model_config.py              # Model registry (Qwen, Aya, Llama)
+│   ├── bandit_config.py             # Bandit hyperparameters
+│   └── steering_vectors.py          # Steering vector paths
+│
+├── src/                             # Source code
+│   ├── bandit/                      # Bandit algorithms (LinUCB, Thompson, Neural)
+│   ├── context_extractor/           # 128-dim feature extraction
+│   ├── debiasing_arms/              # 6 debiasing strategies
+│   ├── llm/                         # Model loading and generation
+│   ├── reward/                      # Bias and quality scoring
+│   ├── pipeline/                    # Training and inference pipelines
+│   │   ├── training_pipeline.py     # Base training pipeline
+│   │   ├── sequential_training_pipeline.py  # Enhanced with theory tracking
+│   │   └── inference_pipeline.py    # Inference pipeline
+│   │
+│   ├── theory/                      # Theoretical analysis (NEW)
+│   │   ├── regret_tracker.py        # R(T) tracking
+│   │   ├── fairness_tracker.py      # V(T) tracking
+│   │   ├── bounds.py                # O(d√(KT log(T/δ))) bounds
+│   │   ├── adaptive_vs_static.py    # Proves R_adaptive/R_static → 0
+│   │   └── theorem_verification.py  # Monte Carlo verification
+│   │
+│   ├── metrics/                     # Evaluation metrics (NEW)
+│   │   ├── ibr.py                   # Intersectional Bias Reduction
+│   │   ├── far.py                   # Fairness-Aware Regret
+│   │   └── comprehensive_evaluator.py
+│   │
+│   ├── output/                      # Output standardization (NEW)
+│   │   └── csv_manager.py           # Full-form column names
+│   │
+│   ├── crosslingual/                # Cross-lingual analysis (NEW)
+│   │   ├── transfer_analyzer.py     # EN→HI, EN→BN transfer
+│   │   ├── code_mixing_handler.py   # Hinglish/Benglish detection
+│   │   └── parallel_evaluator.py    # Parallel sample evaluation
+│   │
+│   ├── ablation/                    # Ablation framework (NEW)
+│   │   ├── config_generator.py      # 14+ ablation configurations
+│   │   ├── ablation_runner.py       # Automated experiment runner
+│   │   └── results_analyzer.py      # Component importance
+│   │
+│   └── data/                        # Data handling
+│       ├── dataset_loader.py        # Multi-CrowS-Pairs, IndiBias
+│       └── bias_categories.py       # Full-form bias category mappings
+│
+├── scripts/                         # Executable scripts
+│   ├── run_experiment.py            # Main experiment orchestrator
+│   ├── generate_all_results.py      # TACL publication suite
+│   ├── evaluate_with_metrics.py     # IBR/FAR evaluation
+│   ├── train_bandit.py              # Train specific bandit
+│   ├── evaluate_system.py           # Evaluate trained system
+│   ├── create_steering_vectors.py   # Create steering vectors
+│   └── prepare_evaluation_data.py   # Prepare datasets
+│
+├── tests/                           # Unit tests
+├── results/                         # Output results
+├── logs/                            # Log files
+├── checkpoints/                     # Model checkpoints
+├── requirements.txt                 # Python dependencies
+├── setup.py                         # Package setup
+├── .env.example                     # Environment template
+└── README.md                        # This file
+```
+
+---
+
+## 🔬 Theoretical Guarantees
+
+### Regret Bound
+
+LinUCB achieves sublinear regret:
+
+```
+R(T) ≤ O(d√(KT log(T/δ)))
+```
+
+Where:
+- `d` = context dimension (128)
+- `K` = number of arms (6)
+- `T` = number of rounds
+- `δ` = confidence parameter
+
+### Adaptive vs Static
+
+The framework proves that adaptive selection outperforms any static arm:
+
+```
+lim(T→∞) R_adaptive(T) / R_static(T) → 0
+```
+
+### Verification
+
+Run Monte Carlo simulations to verify theoretical claims:
+
+```python
+from src.theory import TheoremVerifier
+
+verifier = TheoremVerifier(n_arms=6, context_dim=128, n_simulations=1000)
+results = verifier.run_all_verifications(T=1000)
+print(verifier.get_summary())
+```
+
+---
+
+## 🧪 Ablation Studies
+
+### Standard Configurations (14+)
+
+| Category | Configurations |
+|----------|----------------|
+| **Full System** | `full` |
+| **Baselines** | `random`, `static_baseline`, `static_gender`, `static_prompt` |
+| **Component Ablations** | `no_context`, `no_steering`, `no_prompt`, `no_output_adjust` |
+| **Bandit Algorithms** | `linucb`, `thompson`, `neural` |
+| **Hyperparameter Sensitivity** | `alpha_0.5`, `alpha_2.0`, `lambda_0.0`, `lambda_1.0` |
+
+### Run Ablation Study
+
+```python
+from src.ablation import AblationConfigGenerator, AblationRunner
+
+# Generate configurations
+generator = AblationConfigGenerator()
+configs = generator.generate_all()
+
+# Run experiments
+runner = AblationRunner(results_dir='./ablation_results')
+runner.run_all(configs)
+
+# Analyze results
+from src.ablation import AblationResultsAnalyzer
+analyzer = AblationResultsAnalyzer(runner.load_results())
+print(analyzer.generate_summary())
+print(analyzer.generate_latex_table())
+```
+
+---
+
+## 🌐 Cross-Lingual Transfer
+
+### Transfer Analysis
+
+Analyze how debiasing transfers across languages:
+
+```python
+from src.crosslingual import TransferAnalyzer
+
+analyzer = TransferAnalyzer(
+    source_languages=['en'],
+    target_languages=['hi', 'bn']
+)
+
+# Add observations from experiments
+analyzer.add_observation(language='en', category='gender', baseline_bias=0.8, method_bias=0.3)
+analyzer.add_observation(language='hi', category='gender', baseline_bias=0.7, method_bias=0.4)
+
+# Compute transfer ratios
+transfers = analyzer.compute_all_transfers()
+print(transfers['en->hi'].transfer_ratio)  # 1.0 = perfect transfer
+```
+
+### Code-Mixing Detection
+
+Handle Hindi-English (Hinglish) and Bengali-English input:
+
+```python
+from src.crosslingual import CodeMixingDetector
+
+detector = CodeMixingDetector()
+result = detector.detect("Mujhe lagta hai this is a good idea")
+print(result.is_code_mixed)  # True
+print(result.languages_detected)  # ['hi', 'en']
+```
+
+---
+
+## 📈 Usage Examples
+
+### Training with Enhanced Tracking
+
+```python
+from src.pipeline import SequentialTrainingPipeline
+
+pipeline = SequentialTrainingPipeline(
+    inference_pipeline=inference_pipeline,
+    n_arms=6,
+    context_dim=128,
+    lambda_fairness=0.5,
+    enable_wandb=True
+)
+
+results = pipeline.train_sequential(
+    train_data=train_data,
+    eval_data=eval_data,
+    n_epochs=3,
+    warmup_samples=50
+)
+
+print(f"IBR: {results['ibr']:.4f}")
+print(f"FAR: {results['far']:.4f}")
+print(f"Regret Bound Satisfied: {results['regret_bound_satisfied']}")
+```
+
+### Evaluation with IBR/FAR
+
+```python
+from src.metrics import ComprehensiveMetricsEvaluator
+
+evaluator = ComprehensiveMetricsEvaluator(
+    lambda_weight=0.5,
+    bias_threshold=0.3
+)
+
+# Add observations
+for sample in test_data:
+    evaluator.add_observation(
+        bias_score=sample['bias'],
+        reward=sample['reward'],
+        category=sample['category'],
+        language=sample['language']
+    )
+
+# Evaluate
+result = evaluator.evaluate()
+print(f"IBR: {result.ibr.ibr_score:.4f}")
+print(f"FAR: {result.far.far_score:.4f}")
+print(f"Worst category: {result.ibr.worst_category}")
+```
+
+### Standardized CSV Output
+
+```python
+from src.output import CSVOutputManager
+
+manager = CSVOutputManager(output_dir='./results', timestamp_files=True)
+manager.save_main_results(df)  # Automatically uses full-form column names
+```
+
+---
+
+## ⚙️ Configuration
+
+### Environment Variables (`.env`)
+
+```bash
+# Required for HuggingFace models
+HF_TOKEN=hf_xxxxxxxxxxxx
+
+# Optional
+WANDB_PROJECT=fair-cb
+CUDA_VISIBLE_DEVICES=0
+```
+
+### Model Configuration (`config/model_config.py`)
+
+```python
+from config.model_config import get_model_config, get_all_models
+
+# Get specific model
+config = get_model_config('qwen')
+print(config['model_id'])  # Qwen/Qwen2.5-7B-Instruct
+
+# List all supported models
+models = get_all_models()
+print(models)  # ['qwen', 'aya', 'llama']
+```
+
+### Bandit Configuration
+
+```python
+from config.bandit_config import get_bandit_config
+
+config = get_bandit_config('linucb')
+print(config['alpha'])  # 1.0
+print(config['context_dim'])  # 128
+```
+
+---
+
+## 🧹 Memory Management
+
+The system is optimized for 24GB VRAM:
+
+- 4-bit quantization (NF4) for LLMs
+- Sequential model loading
+- Aggressive memory cleanup
+- Neural bandit on CPU (avoids GPU conflicts)
+
+---
+
+## 📋 Expected Results
+
+### Runtime (24GB GPU)
+
+| Task | Duration |
+|------|----------|
+| Dataset preparation | 10-15 min |
+| Steering vector creation | 30-45 min |
+| Training (1 epoch, 1000 samples) | 2-3 hours/algorithm |
+| Evaluation (200 samples) | 15-20 min/algorithm |
+| Complete experiment (3 epochs, 3 algorithms) | 20-24 hours |
+
+### Disk Usage
+
+| Component | Size |
+|-----------|------|
+| Steering vectors | ~450MB |
+| Checkpoints | ~50-150MB |
+| Datasets | ~100MB |
+| Results/logs | ~200MB |
+| **Total** | ~1-2GB |
+
+---
+
+## 🔧 Troubleshooting
+
+<details>
+<summary><b>Out of Memory (OOM) Errors</b></summary>
 
 1. Reduce batch size in neural bandit config
-2. Decrease `max_train_samples` during training
+2. Decrease `--max_train_samples` during training
 3. Use fewer warmup samples
-4. Ensure previous models are unloaded: check `clear_gpu_memory()` calls
+4. Ensure previous models are unloaded
 
-### Slow Training
+</details>
 
-To speed up training:
+<details>
+<summary><b>Slow Training</b></summary>
 
-1. Reduce `eval_every` to evaluate less frequently
+1. Reduce `--eval-every` to evaluate less frequently
 2. Use smaller evaluation set with `--max_eval_samples`
-3. Start with LinUCB (fastest) before trying Neural Bandit
+3. Start with LinUCB (fastest) before Neural Bandit
 4. Use `--max_train_samples` for quick testing
 
-### Missing Steering Vectors
+</details>
 
-If steering vectors are missing:
+<details>
+<summary><b>Missing Steering Vectors</b></summary>
 
 ```bash
 python scripts/create_steering_vectors.py
 ```
 
-This requires contrastive pairs in [data/contrastive_pairs/](data/contrastive_pairs/)
+</details>
 
-### W&B Login Issues
-
-If W&B login fails:
+<details>
+<summary><b>W&B Login Issues</b></summary>
 
 ```bash
-# Login to W&B
 wandb login
-
-# Or disable W&B
-python scripts/train_bandit.py --no_wandb ...
+# Or disable: python scripts/train_bandit.py --no_wandb
 ```
 
-## Expected Runtime (24GB GPU)
+</details>
 
-Approximate times on GCP with 24GB VRAM:
+---
 
-- **Dataset preparation**: 10-15 minutes
-- **Steering vector creation**: 30-45 minutes
-- **Training (1 epoch, 1000 samples)**: 2-3 hours per algorithm
-- **Evaluation (200 samples)**: 15-20 minutes per algorithm
-- **Complete experiment (3 epochs, 3 algorithms)**: 20-24 hours
-
-## File Sizes
-
-Expected file sizes after complete run:
-
-- Steering vectors: ~150MB each (3 × 150MB = 450MB)
-- Bandit checkpoints: ~10-50MB each
-- Dataset files: ~50-100MB total
-- Results and logs: ~100-200MB
-- **Total disk usage**: ~1-2GB
-
-## Citation
+## 📜 Citation
 
 ```bibtex
-@software{mab_debiasing,
-  title={Adaptive Multi-Armed Bandit Debiasing for Multilingual LLMs},
-  author={Research Team},
-  year={2024},
-  url={https://github.com/yourusername/mab_debiasing}
+@article{fair_cb_2026,
+  title={Fair-CB: Fairness-Aware Contextual Bandits for Adaptive Multilingual LLM Debiasing},
+  author={Your Name},
+  journal={Transactions of the Association for Computational Linguistics},
+  year={2026},
+  note={Under Review}
 }
 ```
 
-## License
+---
 
-MIT License
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+
+**[Documentation](docs/) · [Issues](https://github.com/yourusername/Fair-CB/issues) · [Contributing](CONTRIBUTING.md)**
+
+</div>
